@@ -1300,10 +1300,16 @@ export type Database = {
       is_member: { Args: { _restaurant_id: string }; Returns: boolean }
       is_owner: { Args: { _restaurant_id: string }; Returns: boolean }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_published_restaurant: {
+        Args: { _restaurant_id: string }
+        Returns: boolean
+      }
       member_role_for: {
         Args: { _restaurant_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["member_role"]
       }
+      owns_customer: { Args: { _customer_id: string }; Returns: boolean }
+      owns_order: { Args: { _order_id: string }; Returns: boolean }
     }
     Enums: {
       fulfillment_type: "delivery" | "pickup"
