@@ -142,13 +142,9 @@ function Orders() {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
-      const { error } = await supabase
-        .from("orders")
-        .update({
-          status,
-          completed_at: status === "completed" ? new Date().toISOString() : null,
-        })
-        .eq("id", id);
+      const patch: { status: OrderStatus; completed_at?: string } = { status };
+      if (status === "completed") patch.completed_at = new Date().toISOString();
+      const { error } = await supabase.from("orders").update(patch).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
