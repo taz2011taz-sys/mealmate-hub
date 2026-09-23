@@ -107,6 +107,27 @@ function Dashboard() {
     },
   });
 
+  useEffect(() => {
+    if (!restaurantId) return;
+    const channel = supabase
+      .channel(`dashboard-${restaurantId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders", filter: `restaurant_id=eq.${restaurantId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["dashboard-orders", restaurantId] });
+          queryClient.invalidateQueries({ queryKey: ["popular-items", restaurantId] });
+          queryClient.invalidateQueries({ queryKey: ["customer-count", restaurantId] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [restaurantId, queryClient]);
+
+
+
   if (ordersQuery.isLoading) return <ListSkeleton rows={5} />;
   if (ordersQuery.isError) {
     return (
