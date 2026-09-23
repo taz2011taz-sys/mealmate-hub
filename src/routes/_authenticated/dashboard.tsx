@@ -53,6 +53,7 @@ function Dashboard() {
   const { restaurant, activeBranchId, role } = useWorkspace();
   const restaurantId = restaurant?.id ?? null;
   const canSeeMoney = role !== "staff";
+  const queryClient = useQueryClient();
 
   const ordersQuery = useQuery({
     queryKey: ["dashboard-orders", restaurantId, activeBranchId],
