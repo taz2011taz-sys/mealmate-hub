@@ -34,7 +34,7 @@ export async function uploadImage(
   prefix = "img",
 ): Promise<string> {
   const blob = await compressImage(file);
-  const path = `${restaurantId}/${prefix}-${crypto.randomUUID()}.webp`;
+  const path = `${restaurantId}/${prefix}/${crypto.randomUUID()}.webp`;
   const { error } = await supabase.storage.from(bucket).upload(path, blob, {
     contentType: "image/webp",
     upsert: true,
