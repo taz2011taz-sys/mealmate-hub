@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { ChevronLeft, Grid2x2, LayoutDashboard, type LucideIcon, ReceiptText, UtensilsCrossed } from "lucide-react";
+import { Bell, ChevronLeft, Grid2x2, LayoutDashboard, type LucideIcon, ReceiptText, UtensilsCrossed } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -66,13 +66,47 @@ function useLiveNewOrders() {
   return countQuery.data ?? 0;
 }
 
+function InboxBell() {
+  const { userId } = useWorkspace();
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["inbox-unread", userId],
+    enabled: !!userId,
+    refetchInterval: 30000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("is_read", false);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+  return (
+    <Link
+      to="/inbox"
+      aria-label={unread > 0 ? `Inbox, ${unread} unread` : "Inbox"}
+      className="tap-target relative flex items-center justify-center rounded-xl border border-border bg-card px-2.5 text-muted-foreground shadow-card"
+    >
+      <Bell className="size-5" />
+      {unread > 0 ? (
+        <span className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-destructive px-1 text-center text-[10px] font-semibold leading-[18px] text-destructive-foreground">
+          {unread > 99 ? "99+" : unread}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const newOrders = useLiveNewOrders();
 
   return (
     <div className="min-h-screen bg-background pb-[calc(76px+env(safe-area-inset-bottom))]">
-      <div className="mx-auto w-full max-w-2xl px-4 pt-6">{children}</div>
+      <div className="mx-auto flex w-full max-w-2xl justify-end px-4 pt-4">
+        {pathname !== "/inbox" ? <InboxBell /> : null}
+      </div>
+      <div className="mx-auto w-full max-w-2xl px-4 pt-2">{children}</div>
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/90 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-2xl items-stretch justify-between px-2 pb-[env(safe-area-inset-bottom)]">
           {TABS.map((tab) => {
