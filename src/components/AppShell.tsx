@@ -1,7 +1,10 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChevronLeft, Grid2x2, LayoutDashboard, type LucideIcon, ReceiptText, UtensilsCrossed } from "lucide-react";
-import type { ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, type ReactNode } from "react";
+import { toast } from "sonner";
 
+import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/lib/workspace";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +15,60 @@ const TABS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: "/more", label: "More", icon: Grid2x2 },
 ];
 
+function useLiveNewOrders() {
+  const { restaurant } = useWorkspace();
+  const restaurantId = restaurant?.id ?? null;
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const countQuery = useQuery({
+    queryKey: ["orders-new-count", restaurantId],
+    enabled: !!restaurantId,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("restaurant_id", restaurantId!)
+        .eq("status", "new");
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  useEffect(() => {
+    if (!restaurantId) return;
+    const channel = supabase
+      .channel(`shell-orders-${restaurantId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "orders", filter: `restaurant_id=eq.${restaurantId}` },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ["orders-new-count", restaurantId] });
+          if (payload.eventType === "INSERT") {
+            const row = payload.new as { order_number?: string; customer_name?: string | null };
+            navigator.vibrate?.([150, 80, 150]);
+            if (window.location.pathname !== "/orders") {
+              toast.success(`New order ${row.order_number ?? ""}`.trim(), {
+                description: row.customer_name ?? "A customer just placed an order",
+                action: { label: "View", onClick: () => navigate({ to: "/orders" }) },
+                duration: 10000,
+              });
+            }
+          }
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [restaurantId, queryClient, navigate]);
+
+  return countQuery.data ?? 0;
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const newOrders = useLiveNewOrders();
 
   return (
     <div className="min-h-screen bg-background pb-[calc(76px+env(safe-area-inset-bottom))]">
@@ -22,16 +77,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex w-full max-w-2xl items-stretch justify-between px-2 pb-[env(safe-area-inset-bottom)]">
           {TABS.map((tab) => {
             const active = pathname === tab.to || pathname.startsWith(`${tab.to}/`);
+            const badge = tab.to === "/orders" ? newOrders : 0;
             return (
               <Link
                 key={tab.to}
                 to={tab.to}
                 className={cn(
-                  "tap-target flex flex-1 flex-col items-center gap-1 rounded-xl py-3 text-[11px] font-medium transition-colors",
+                  "tap-target relative flex flex-1 flex-col items-center gap-1 rounded-xl py-3 text-[11px] font-medium transition-colors",
                   active ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 <tab.icon className={cn("size-5", active && "drop-shadow")} />
+                {badge > 0 ? (
+                  <span className="pulse-live absolute right-[calc(50%-20px)] top-1.5 min-w-[18px] rounded-full bg-destructive px-1 text-center text-[10px] font-semibold leading-[18px] text-destructive-foreground">
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                ) : null}
                 {tab.label}
               </Link>
             );
