@@ -8,3 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+- Sign-in UI is Clerk; a server function verifies the Clerk session and issues a backend session for the same email, so database security rules (auth.uid) stay the source of access control.
