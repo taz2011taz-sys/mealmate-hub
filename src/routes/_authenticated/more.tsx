@@ -66,6 +66,7 @@ function More() {
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
+    sessionStorage.setItem("mm_signed_out", "1");
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }

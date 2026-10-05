@@ -86,6 +86,7 @@ function SettingsPage() {
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
+    sessionStorage.setItem("mm_signed_out", "1");
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
@@ -96,6 +97,7 @@ function SettingsPage() {
     try {
       await removeAccount({});
       queryClient.clear();
+      sessionStorage.setItem("mm_signed_out", "1");
       await supabase.auth.signOut();
       toast.success("Your account has been deleted.");
       navigate({ to: "/auth", replace: true });
