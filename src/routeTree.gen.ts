@@ -34,6 +34,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedSubscriptionRouteImport } from './routes/_authenticated/subscription'
 import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiPublicRevenuecatRouteImport } from './routes/api/public/revenuecat'
 
 const IndexRoute = IndexRouteImport.update({
@@ -163,6 +164,11 @@ const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
   path: '/support',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicRevenuecatRoute = ApiPublicRevenuecatRouteImport.update({
   id: '/api/public/revenuecat',
   path: '/api/public/revenuecat',
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/staff': typeof AuthenticatedStaffRoute
   '/subscription': typeof AuthenticatedSubscriptionRoute
   '/support': typeof AuthenticatedSupportRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/public/revenuecat': typeof ApiPublicRevenuecatRoute
 }
 export interface FileRoutesByTo {
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/staff': typeof AuthenticatedStaffRoute
   '/subscription': typeof AuthenticatedSubscriptionRoute
   '/support': typeof AuthenticatedSupportRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/public/revenuecat': typeof ApiPublicRevenuecatRoute
 }
 export interface FileRoutesById {
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
   '/_authenticated/subscription': typeof AuthenticatedSubscriptionRoute
   '/_authenticated/support': typeof AuthenticatedSupportRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/public/revenuecat': typeof ApiPublicRevenuecatRoute
 }
 export interface FileRouteTypes {
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/subscription'
     | '/support'
+    | '/api/auth/$'
     | '/api/public/revenuecat'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/subscription'
     | '/support'
+    | '/api/auth/$'
     | '/api/public/revenuecat'
   id:
     | '__root__'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/_authenticated/staff'
     | '/_authenticated/subscription'
     | '/_authenticated/support'
+    | '/api/auth/$'
     | '/api/public/revenuecat'
   fileRoutesById: FileRoutesById
 }
@@ -343,6 +355,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiPublicRevenuecatRoute: typeof ApiPublicRevenuecatRoute
 }
 
@@ -523,6 +536,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSupportRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/revenuecat': {
       id: '/api/public/revenuecat'
       path: '/api/public/revenuecat'
@@ -588,6 +608,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiPublicRevenuecatRoute: ApiPublicRevenuecatRoute,
 }
 export const routeTree = rootRouteImport
