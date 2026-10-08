@@ -8,4 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
-- Sign-in UI is Clerk; a server function verifies the Clerk session and issues a backend session for the same email, so database security rules (auth.uid) stay the source of access control.
+- Sign-in uses Better Auth (email/password) mounted at /api/auth/*, storing users/sessions in locked public.ba_* tables via the app's DB connection; a server fn then bridges to a backend session for the same email so auth.uid()-based RLS stays the source of access control.
